@@ -1,18 +1,13 @@
 import fetch from "node-fetch";
 
 export default async function handler(req, res) {
-  let { id } = req.query;
+  const { id } = req.query;
+  const backupStream = "https://github.com/fluxmaxturkiye/yayinyok/raw/refs/heads/main/yayinkapali.m3u8";
 
-  // .m3u8 uzantısını temizle, URL /api/184203.m3u8 şeklinde olsa da çalışsın
+  // Eğer id yoksa backup stream'e yönlendir
   if (!id) {
-    return res.redirect(
-      "https://github.com/fluxmaxturkiye/yayinyok/raw/refs/heads/main/yayinkapali.m3u8"
-    );
+    return res.redirect(backupStream);
   }
-  id = id.replace(".m3u8", "");
-
-  const backupStream =
-    "https://github.com/fluxmaxturkiye/yayinyok/raw/refs/heads/main/yayinkapali.m3u8";
 
   const url = `http://iptv.darktv.in:80/play/live.php?mac=00:1A:79:11:15:92&stream=${id}&extension=m3u8`;
 
@@ -33,7 +28,8 @@ export default async function handler(req, res) {
     return res.redirect(backupStream);
   }
 
-  let text = await response.text();
+  const text = await response.text();
+
   if (!text.includes("#EXTM3U")) {
     return res.redirect(backupStream);
   }
@@ -42,19 +38,16 @@ export default async function handler(req, res) {
   const finalUrl = new URL(response.url);
   const baseUrl = `${finalUrl.protocol}//${finalUrl.host}`;
 
-  // Vercel segment yönlendirme (segment.js dosyası)
-  const segmentBaseUrl = `https://${req.headers.host}/api/segment?token=`;
+  // Vercel segment yönlendirme URL'si
+  const segmentBaseUrl = `https://${req.headers.host}/api/segment.js?token=`;
 
-  // M3U8 içeriğini işle
   const newLines = text.split("\n").map((line) => {
     if (line.startsWith("#") || line.trim() === "") return line;
 
-    // Eğer segment path "/" ile başlıyorsa → baseUrl ekle
-    const fullUrl = line.startsWith("http")
-      ? line
-      : baseUrl + (line.startsWith("/") ? line : "/" + line);
-
+    // Segment path'i tam URL'ye dönüştür
+    const fullUrl = line.startsWith("http") ? line : baseUrl + (line.startsWith("/") ? line : "/" + line);
     const encoded = Buffer.from(fullUrl).toString("base64");
+
     return `${segmentBaseUrl}${encodeURIComponent(encoded)}`;
   });
 
