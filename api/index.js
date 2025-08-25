@@ -36,7 +36,7 @@ export default async function handler(req, res) {
 
   // Base URL çıkar (segmentlerin tam linkini kurmak için)
   const finalUrl = new URL(response.url);
-  const baseUrl = `${finalUrl.protocol}//${finalUrl.host}`;
+  const baseUrl = `https://primal.b-cdn.net/media-cache?&u=${finalUrl.protocol}//${finalUrl.host}`;
 
   // Vercel segment yönlendirme URL'si
   const segmentBaseUrl = `https://darkiptvcdn.d53kwrtmgs53a2.workers.dev/api/segment.js?token=`;
