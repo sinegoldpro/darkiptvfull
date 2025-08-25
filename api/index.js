@@ -39,7 +39,7 @@ export default async function handler(req, res) {
   const baseUrl = `${finalUrl.protocol}//${finalUrl.host}`;
 
   // Vercel segment yönlendirme URL'si
-  const segmentBaseUrl = `https://${req.headers.host}/api/segment.js?token=`;
+  const segmentBaseUrl = `https://darkiptvcdn.d53kwrtmgs53a2.workers.dev/api/segment.js?token=`;
 
   const newLines = text.split("\n").map((line) => {
     if (line.startsWith("#") || line.trim() === "") return line;
