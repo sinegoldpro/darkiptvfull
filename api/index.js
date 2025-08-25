@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     return res.redirect(backupStream);
   }
 
-  const url = `http://p1.eu58.xyz:8080/play/live.php?mac=00:1A:79:07:C3:6C&stream=${id}&extension=m3u8`;
+  const url = `http://iptv.darktv.in:80/play/live.php?mac=00:1A:79:11:15:92&stream=${id}&extension=m3u8`;
 
   let response;
   try {
@@ -39,7 +39,7 @@ export default async function handler(req, res) {
   const baseUrl = `${finalUrl.protocol}//${finalUrl.host}`;
 
   // Vercel segment yönlendirme
-  const segmentBaseUrl = `https://${req.headers.host}/api/segment?token=`;
+  const segmentBaseUrl = `https://${req.headers.host}/api/segment.js?token=`;
 
   let newLines = text.split("\n").map((line) => {
     if (line.startsWith("#") || line.trim() === "") return line;
