@@ -3,15 +3,16 @@ import fetch from "node-fetch";
 export default async function handler(req, res) {
   let { id } = req.query;
 
-  // .m3u8 uzantısını temizle
+  // .m3u8 uzantısını temizle, URL /api/184203.m3u8 şeklinde olsa da çalışsın
+  if (!id) {
+    return res.redirect(
+      "https://github.com/fluxmaxturkiye/yayinyok/raw/refs/heads/main/yayinkapali.m3u8"
+    );
+  }
   id = id.replace(".m3u8", "");
 
   const backupStream =
     "https://github.com/fluxmaxturkiye/yayinyok/raw/refs/heads/main/yayinkapali.m3u8";
-
-  if (!id) {
-    return res.redirect(backupStream);
-  }
 
   const url = `http://iptv.darktv.in:80/play/live.php?mac=00:1A:79:11:15:92&stream=${id}&extension=m3u8`;
 
@@ -38,17 +39,18 @@ export default async function handler(req, res) {
   }
 
   // Base URL çıkar (segmentlerin tam linkini kurmak için)
-  const finalUrl = new URL(response.url); 
+  const finalUrl = new URL(response.url);
   const baseUrl = `${finalUrl.protocol}//${finalUrl.host}`;
 
-  // Segment yönlendirme
-  const segmentBaseUrl = `https://${req.headers.host}/api/segment.js?token=`;
+  // Vercel segment yönlendirme (segment.js dosyası)
+  const segmentBaseUrl = `https://${req.headers.host}/api/segment?token=`;
 
-  let newLines = text.split("\n").map((line) => {
+  // M3U8 içeriğini işle
+  const newLines = text.split("\n").map((line) => {
     if (line.startsWith("#") || line.trim() === "") return line;
 
     // Eğer segment path "/" ile başlıyorsa → baseUrl ekle
-    let fullUrl = line.startsWith("http")
+    const fullUrl = line.startsWith("http")
       ? line
       : baseUrl + (line.startsWith("/") ? line : "/" + line);
 
