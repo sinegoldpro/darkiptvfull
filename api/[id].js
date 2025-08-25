@@ -1,7 +1,10 @@
 import fetch from "node-fetch";
 
 export default async function handler(req, res) {
-  const { id } = req.query;
+  let { id } = req.query;
+
+  // .m3u8 uzantısını temizle
+  id = id.replace(".m3u8", "");
 
   const backupStream =
     "https://github.com/fluxmaxturkiye/yayinyok/raw/refs/heads/main/yayinkapali.m3u8";
@@ -35,10 +38,10 @@ export default async function handler(req, res) {
   }
 
   // Base URL çıkar (segmentlerin tam linkini kurmak için)
-  const finalUrl = new URL(response.url); // takip edilmiş son URL
+  const finalUrl = new URL(response.url); 
   const baseUrl = `${finalUrl.protocol}//${finalUrl.host}`;
 
-  // Vercel segment yönlendirme
+  // Segment yönlendirme
   const segmentBaseUrl = `https://${req.headers.host}/api/segment.js?token=`;
 
   let newLines = text.split("\n").map((line) => {
