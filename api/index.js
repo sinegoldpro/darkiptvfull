@@ -3,7 +3,8 @@ import fetch from "node-fetch";
 export default async function handler(req, res) {
   const { id } = req.query;
 
-  const backupStream = "https://github.com/fluxmaxturkiye/yayinyok/raw/refs/heads/main/yayinkapali.m3u8";
+  const backupStream =
+    "https://github.com/fluxmaxturkiye/yayinyok/raw/refs/heads/main/yayinkapali.m3u8";
 
   if (!id) {
     return res.redirect(backupStream);
@@ -20,6 +21,7 @@ export default async function handler(req, res) {
       },
     });
   } catch (err) {
+    console.error("Fetch error:", err);
     return res.redirect(backupStream);
   }
 
@@ -28,17 +30,26 @@ export default async function handler(req, res) {
   }
 
   let text = await response.text();
-
   if (!text.includes("#EXTM3U")) {
     return res.redirect(backupStream);
   }
 
-  // Base URL (segment yönlendirmesi için)
-  const segmentBaseUrl = `${req.protocol || "https"}://${req.headers.host}/api/segment?token=`;
+  // Base URL çıkar (segmentlerin tam linkini kurmak için)
+  const finalUrl = new URL(response.url); // takip edilmiş son URL
+  const baseUrl = `${finalUrl.protocol}//${finalUrl.host}`;
+
+  // Vercel segment yönlendirme
+  const segmentBaseUrl = `https://${req.headers.host}/api/segment?token=`;
 
   let newLines = text.split("\n").map((line) => {
     if (line.startsWith("#") || line.trim() === "") return line;
-    const encoded = Buffer.from(line).toString("base64");
+
+    // Eğer segment path "/" ile başlıyorsa → baseUrl ekle
+    let fullUrl = line.startsWith("http")
+      ? line
+      : baseUrl + (line.startsWith("/") ? line : "/" + line);
+
+    const encoded = Buffer.from(fullUrl).toString("base64");
     return `${segmentBaseUrl}${encodeURIComponent(encoded)}`;
   });
 
